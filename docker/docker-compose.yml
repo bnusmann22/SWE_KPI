@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: kpi_postgres
+    environment:
+      POSTGRES_USER: kpi_user
+      POSTGRES_PASSWORD: kpi_password
+      POSTGRES_DB: kpi_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kpi_user -d kpi_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: kpi_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Application
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: kpi_api
+    environment:
+      DATABASE_URL: postgresql://kpi_user:kpi_password@postgres:5432/kpi_db
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: development
+      DEBUG: "true"
+      SECRET_KEY: dev-secret-key
+      JWT_SECRET_KEY: dev-jwt-secret
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ..:/app
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+  # Celery Worker
+  celery_worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: kpi_celery_worker
+    environment:
+      DATABASE_URL: postgresql://kpi_user:kpi_password@postgres:5432/kpi_db
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ..:/app
+    command: celery -A app.tasks.celery_app worker -l info
+
+  # Celery Beat Scheduler
+  celery_beat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: kpi_celery_beat
+    environment:
+      DATABASE_URL: postgresql://kpi_user:kpi_password@postgres:5432/kpi_db
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ..:/app
+    command: celery -A app.tasks.celery_app beat -l info
+
+volumes:
+  postgres_data:
+  redis_data:

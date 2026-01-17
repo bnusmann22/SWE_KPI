@@ -1,171 +1,203 @@
-# Departmental KPI Framework  
-### Software Engineering Department – Faculty of Computing
+# KPI System - Departmental Performance Management
 
-## 📌 Overview
+A comprehensive, scalable system for managing Key Performance Indicators (KPIs) for the Software Engineering Department.
 
-This repository contains a **Key Performance Indicator (KPI) framework** designed to evaluate and improve the performance of the **Software Engineering Department** within the Faculty of Computing.
+## Features
 
-The framework focuses on **measurable outcomes**, student skill development, teaching effectiveness, innovation, and industry relevance. It is intended as a **pilot model** that can be scaled across other departments and, eventually, the entire faculty.
+- **Automated KPI Calculation**: Compute department performance metrics automatically
+- **Real-time Analytics**: Dashboard with real-time performance data
+- **Automated Reporting**: Generate comprehensive reports in PDF and Excel formats
+- **RESTful API**: Complete API for external integrations
+- **Data Integration**: Connect with GitHub, LMS, surveys, and academic systems
+- **Scalable Architecture**: Built with FastAPI, PostgreSQL, and Redis
+
+## Tech Stack
+
+- **Backend**: Python 3.11+, FastAPI
+- **Database**: PostgreSQL with Redis caching
+- **Task Queue**: Celery with Redis broker
+- **Authentication**: JWT tokens with bcrypt hashing
+- **Deployment**: Docker & Docker Compose
+
+## Prerequisites
+
+- Python 3.11+
+- PostgreSQL 12+
+- Redis 6+
+- Docker & Docker Compose (optional)
+
+## Installation
+
+### Local Development
+
+```bash
+# Clone repository
+git clone https://github.com/your-org/kpi-system.git
+cd kpi-system
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+make install
+
+# Copy environment file
+cp .env.example .env
+
+# Start Docker services
+make docker-up
+
+# Initialize database
+make init-db
+make migrate
+
+# Seed sample data (optional)
+make seed
+
+# Run development server
+make dev
+```
+
+The API will be available at `http://localhost:8000`
+- API Documentation: `http://localhost:8000/api/v1/docs`
+- ReDoc: `http://localhost:8000/api/v1/redoc`
+
+## Available Commands
+
+```bash
+make help          # Show all available commands
+make dev           # Run development server
+make test          # Run tests with coverage
+make lint          # Run code linting
+make format        # Format code with black and isort
+make docker-up     # Start Docker services
+make docker-down   # Stop Docker services
+make migrate       # Run database migrations
+make init-db       # Initialize database
+make seed          # Seed sample data
+```
+
+## Project Structure
+
+```
+kpi-system/
+├── app/                    # Main application package
+│   ├── core/              # Core modules (config, security, exceptions)
+│   ├── api/               # API endpoints
+│   ├── models/            # SQLAlchemy ORM models
+│   ├── schemas/           # Pydantic request/response models
+│   ├── services/          # Business logic
+│   ├── crud/              # Database operations
+│   ├── db/                # Database configuration
+│   └── main.py            # FastAPI application entry point
+├── tests/                  # Test suite
+├── scripts/               # Utility scripts
+├── docker/                # Docker configuration
+├── docs/                  # Documentation
+└── README.md              # This file
+```
+
+## API Documentation
+
+### Authentication
+
+All API endpoints require JWT authentication. Include the token in the Authorization header:
+
+```
+Authorization: Bearer <your_token>
+```
+
+### Available Endpoints
+
+- `GET /api/v1/health` - Health check
+- `GET /api/v1/` - API information
+- More endpoints coming in Phase 2
+
+## Development
+
+### Code Style
+
+The project uses:
+- **Black** for code formatting
+- **isort** for import sorting
+- **Flake8** for linting
+- **mypy** for type checking
+
+Format your code before committing:
+
+```bash
+make format
+make lint
+```
+
+### Testing
+
+Run tests with:
+
+```bash
+make test
+```
+
+### Database Migrations
+
+Create a new migration:
+
+```bash
+alembic revision --autogenerate -m "description"
+```
+
+Apply migrations:
+
+```bash
+make migrate
+```
+
+## Environment Variables
+
+See `.env.example` for all available configuration options.
+
+Key variables:
+- `DATABASE_URL`: PostgreSQL connection string
+- `REDIS_URL`: Redis connection string
+- `JWT_SECRET_KEY`: Secret key for JWT signing
+- `GITHUB_TOKEN`: GitHub API token (optional)
+
+## Deployment
+
+### Docker
+
+Deploy using Docker Compose:
+
+```bash
+make docker-up
+```
+
+For production:
+
+```bash
+docker-compose -f docker/docker-compose.prod.yml up -d
+```
+
+## Contributing
+
+1. Create a feature branch: `git checkout -b feature/your-feature`
+2. Make your changes
+3. Format code: `make format`
+4. Run tests: `make test`
+5. Commit: `git commit -am "Add your feature"`
+6. Push: `git push origin feature/your-feature`
+7. Create a Pull Request
+
+## License
+
+MIT License - See LICENSE file for details
+
+## Support
+
+For support, please open an issue on GitHub or contact the development team.
 
 ---
 
-## 🎯 Objectives
-
-The primary goals of this KPI framework are to:
-
-- Measure academic and practical learning outcomes objectively
-- Improve student employability and industry readiness
-- Encourage hands-on learning and innovation
-- Support teaching effectiveness and curriculum relevance
-- Provide data-driven insights for continuous improvement
-- Establish a scalable model for faculty-wide performance evaluation
-
----
-
-## 🧱 KPI Pillars
-
-The KPI framework is structured around **five core pillars**:
-
-### 1️⃣ Academic Quality & Learning Outcomes
-Measures the effectiveness of teaching and learning processes.
-
-**Key Indicators:**
-- Percentage of courses with practical projects
-- Pass rate in core programming courses
-- Ratio of practical sessions to theoretical sessions
-- Use of modern development tools and technologies
-
----
-
-### 2️⃣ Student Skills & Employability
-Evaluates how well students are prepared for industry and real-world problem-solving.
-
-**Key Indicators:**
-- Percentage of students with deployed or completed projects
-- Number of students with active GitHub repositories
-- Internship and SIWES participation rate
-- Real-world relevance of final-year projects
-- Participation in hackathons and coding challenges
-
----
-
-### 3️⃣ Lecturer Engagement & Teaching Effectiveness
-Focuses on teaching quality, course delivery, and lecturer development.
-
-**Key Indicators:**
-- Use of Learning Management Systems (LMS)
-- Course outline review and update frequency
-- Student feedback scores (anonymous)
-- Participation in academic or industry training programs
-
-> *Note: This pillar is intended to support improvement, not punitive evaluation.*
-
----
-
-### 4️⃣ Innovation, Research & Projects
-Encourages creativity, research, and solution-driven development.
-
-**Key Indicators:**
-- Number of student-led tech projects per academic session
-- Research publications or technical articles
-- Department-organized workshops, bootcamps, or seminars
-- Collaboration on problem-solving initiatives
-
----
-
-### 5️⃣ Community & Industry Engagement
-Measures the department’s external relevance and impact.
-
-**Key Indicators:**
-- Industry partnerships and guest sessions
-- Alumni mentorship programs
-- Community outreach initiatives
-- Participation in faculty or university-wide tech programs
-
----
-
-## 📊 Sample KPI Targets
-
-| Pillar | KPI | Target |
-|------|----|------|
-| Academic Quality | Courses with practical projects | ≥ 70% |
-| Employability | Students with GitHub projects | ≥ 60% |
-| Innovation | Student tech projects per session | ≥ 10 |
-| Teaching | Updated course outlines | ≥ 80% |
-| Engagement | Industry sessions per semester | ≥ 2 |
-
----
-
-## 🚀 Implementation Strategy
-
-### Phase 1: Department-Level Pilot
-- Apply KPIs within the Software Engineering department
-- Collect data using surveys, project reviews, and academic records
-- Review performance at the end of each academic session
-
-### Phase 2: Faculty-Level Expansion
-- Adapt KPIs for other departments within the Faculty of Computing
-- Standardize KPI reporting formats
-- Encourage inter-departmental benchmarking
-
-### Phase 3: Digital KPI Dashboard (Future Work)
-- Web-based dashboard for real-time KPI tracking
-- Visualization of departmental performance
-- Data transparency and accountability
-
----
-
-## 🧩 Data Sources
-
-- Course outlines and academic records
-- Student project repositories (GitHub)
-- Internship and SIWES reports
-- Anonymous student feedback surveys
-- Departmental activity logs
-
----
-
-## 📈 Expected Outcomes
-
-- Improved student skill acquisition and employability
-- Increased practical and project-based learning
-- Better alignment with industry needs
-- Enhanced accountability and transparency
-- Evidence-based decision-making for academic leadership
-
----
-
-## 🔮 Future Enhancements
-
-- Automated KPI data collection
-- Integration with LMS platforms
-- Faculty-wide KPI dashboards
-- AI-assisted performance analysis
-- Policy documentation and standardization
-
----
-
-## 🤝 Contribution Guidelines
-
-This repository is open to collaboration from:
-- Students
-- Lecturers
-- Departmental administrators
-- Industry advisors
-
-Contributions should align with the goal of **improving academic quality and student outcomes**.
-
----
-
-## 📜 License
-
-This project is released for **academic and educational use**.  
-Adaptation is encouraged with proper attribution.
-
----
-
-## 👤 Author
-
-**Abdullahi Jamil Muhammad**  
-Software Engineering Department  
-Faculty of Computing
+**Version**: 1.0.0  
+**Last Updated**: January 2024
