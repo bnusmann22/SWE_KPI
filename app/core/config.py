@@ -19,9 +19,18 @@ class Settings(BaseSettings):
     SECRET_KEY: str
 
     # Database
-    DATABASE_URL: str
+    DB_NAME: str = "kpi_db"
+    PGUSER: str = "postgres"
+    PGPASSWORD: str = "postgres"
+    PGHOST: str = "127.0.0.1"
+    PGPORT: int = 5432
     DATABASE_POOL_SIZE: int = 20
     DATABASE_ECHO: bool = False
+
+    @property
+    def DATABASE_URL(self) -> str:
+        """Build database URL from individual credentials."""
+        return f"postgresql://{self.PGUSER}:{self.PGPASSWORD}@{self.PGHOST}:{self.PGPORT}/{self.DB_NAME}"
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
