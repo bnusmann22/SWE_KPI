@@ -17,53 +17,117 @@ A comprehensive, scalable system for managing Key Performance Indicators (KPIs) 
 - **Database**: PostgreSQL with Redis caching
 - **Task Queue**: Celery with Redis broker
 - **Authentication**: JWT tokens with bcrypt hashing
-- **Deployment**: Docker & Docker Compose
+- **Deployment**: Docker & Docker Compose (optional)
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.11+ (Python 3.13 supported)
 - PostgreSQL 12+
-- Redis 6+
-- Docker & Docker Compose (optional)
+- Redis 6+ (optional, for caching and task queue)
 
 ## Installation
 
-### Local Development
+### 1. Clone the Repository
 
 ```bash
-# Clone repository
 git clone https://github.com/your-org/kpi-system.git
 cd kpi-system
+```
 
+### 2. Create Virtual Environment
+
+```bash
 # Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python -m venv .venv
 
-# Install dependencies
-make install
+# Activate virtual environment
+# On Windows:
+.venv\Scripts\activate
 
-# Copy environment file
+# On macOS/Linux:
+source .venv/bin/activate
+```
+
+### 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure Environment Variables
+
+Copy the example environment file and update with your settings:
+
+```bash
 cp .env.example .env
+```
 
-# Start Docker services
-make docker-up
+Edit the `.env` file with your database credentials:
 
-# Initialize database
-make init-db
-make migrate
+```env
+# Database Configuration
+DB_NAME=kpi_db
+PGUSER=postgres
+PGPASSWORD=postgres
+PGHOST=127.0.0.1
+PGPORT=5432
 
-# Seed sample data (optional)
-make seed
+# JWT Configuration
+SECRET_KEY=your-secret-key-change-in-production
+JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
+```
 
-# Run development server
-make dev
+### 5. Set Up PostgreSQL Database
+
+Make sure PostgreSQL is running and create the database:
+
+```bash
+# Connect to PostgreSQL
+psql -U postgres
+
+# Create database
+CREATE DATABASE kpi_db;
+
+# Exit psql
+\q
+```
+
+### 6. Initialize the Database
+
+```bash
+python scripts/init_db.py
+```
+
+### 7. Run the Development Server
+
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 The API will be available at `http://localhost:8000`
-- API Documentation: `http://localhost:8000/api/v1/docs`
-- ReDoc: `http://localhost:8000/api/v1/redoc`
+- **API Documentation (Swagger)**: `http://localhost:8000/api/v1/docs`
+- **ReDoc**: `http://localhost:8000/api/v1/redoc`
 
-## Available Commands
+## Quick Start Commands
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run development server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# Run tests
+pytest tests/ -v
+
+# Format code
+black app/ tests/ scripts/
+isort app/ tests/ scripts/
+```
+
+## Using Make Commands (Optional)
+
+If you have `make` installed:
 
 ```bash
 make help          # Show all available commands
@@ -71,8 +135,6 @@ make dev           # Run development server
 make test          # Run tests with coverage
 make lint          # Run code linting
 make format        # Format code with black and isort
-make docker-up     # Start Docker services
-make docker-down   # Stop Docker services
 make migrate       # Run database migrations
 make init-db       # Initialize database
 make seed          # Seed sample data
@@ -155,22 +217,28 @@ make migrate
 
 ## Environment Variables
 
-See `.env.example` for all available configuration options.
+Configure these in your `.env` file:
 
-Key variables:
-- `DATABASE_URL`: PostgreSQL connection string
-- `REDIS_URL`: Redis connection string
-- `JWT_SECRET_KEY`: Secret key for JWT signing
-- `GITHUB_TOKEN`: GitHub API token (optional)
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DB_NAME` | PostgreSQL database name | `kpi_db` |
+| `PGUSER` | PostgreSQL username | `postgres` |
+| `PGPASSWORD` | PostgreSQL password | `postgres` |
+| `PGHOST` | PostgreSQL host | `127.0.0.1` |
+| `PGPORT` | PostgreSQL port | `5432` |
+| `SECRET_KEY` | Application secret key | - |
+| `JWT_SECRET_KEY` | Secret key for JWT signing | - |
+| `REDIS_URL` | Redis connection string | `redis://localhost:6379/0` |
+| `GITHUB_TOKEN` | GitHub API token (optional) | - |
 
 ## Deployment
 
-### Docker
+### Using Docker (Optional)
 
 Deploy using Docker Compose:
 
 ```bash
-make docker-up
+docker-compose -f docker/docker-compose.yml up -d
 ```
 
 For production:
@@ -200,4 +268,4 @@ For support, please open an issue on GitHub or contact the development team.
 ---
 
 **Version**: 1.0.0  
-**Last Updated**: January 2024
+**Last Updated**: January 2026
