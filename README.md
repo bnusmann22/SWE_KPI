@@ -92,10 +92,12 @@ CREATE DATABASE kpi_db;
 \q
 ```
 
-### 6. Initialize the Database
+### 6. Run Database Migrations
+
+Apply the database migrations to create all tables:
 
 ```bash
-python scripts/init_db.py
+alembic upgrade head
 ```
 
 ### 7. Run the Development Server
@@ -108,11 +110,35 @@ The API will be available at `http://localhost:8000`
 - **API Documentation (Swagger)**: `http://localhost:8000/api/v1/docs`
 - **ReDoc**: `http://localhost:8000/api/v1/redoc`
 
+## Database Migrations
+
+This project uses Alembic for database migrations.
+
+```bash
+# Apply all pending migrations
+alembic upgrade head
+
+# Create a new migration after changing models
+alembic revision --autogenerate -m "Description of changes"
+
+# Rollback the last migration
+alembic downgrade -1
+
+# View migration history
+alembic history
+
+# View current migration version
+alembic current
+```
+
 ## Quick Start Commands
 
 ```bash
 # Install dependencies
 pip install -r requirements.txt
+
+# Apply database migrations
+alembic upgrade head
 
 # Run development server
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
